@@ -12,10 +12,13 @@ languages = { "java"    => "Java",
               "dot-net"  => ".Net"
             }
 
+# Store API publisher id in external config file to prevent unauthorized use
+#
+publisher = File.read("publisher.txt").chop
 
-def request_url(lang, start, limit, from_age, job_type)
+def request_url(publisher, lang, start, limit, from_age, job_type)
 
-  "http://api.indeed.com/ads/apisearch?publisher=9309550523226118" +
+  "http://api.indeed.com/ads/apisearch?publisher=#{publisher}" +
     "&q=title:" + URI::encode(lang) + "%28programmer%20OR%20engineer%20OR%20developer%29" +
     "&l=richmond%2C+bc&sort=date&radius=50&st=" +
     "&jt=#{job_type}" +
@@ -54,14 +57,14 @@ languages.each do |id,lang|
 
   # first pass through results for given language
   #
-  request = request_url(lang, start, limit, from_age, job_type)
+  request = request_url(publisher, lang, start, limit, from_age, job_type)
   result_total, result_end = extract_results(lang, request)
 
   # API returns results in batches of 25
   # continue requests as long as there are more results to fetch
   #
   while result_end < result_total do
-    request = request_url(lang, result_end, limit, from_age, job_type)
+    request = request_url(publisher, lang, result_end, limit, from_age, job_type)
     result_total, result_end = extract_results(lang, request)
   end
 
